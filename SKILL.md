@@ -24,6 +24,23 @@ Reading the signals:
 - Freesound times out: check the terminal's `http(s)_proxy` settings; the scripts use the shell proxy and do not change network configuration.
 - Freesound caps ~80 KB/s per connection: put all keys in one `get`.
 
+## More free libraries
+
+When Freesound has no good match, search the other libraries with one command:
+
+```bash
+L=scripts/sfxlib.py
+python3 $L search "<English query>" --source all -n 10
+python3 $L get <dir> mixkit:1489 archive:<identifier> orangefree:<filename>
+```
+
+Sources and licenses:
+- `archive` — Internet Archive audio items; license varies, check the item page (public domain / CC).
+- `mixkit` — Mixkit Free License; commercial use allowed, no attribution required, do not redistribute the sound as a standalone file.
+- `orangefree` — CC BY-NC 4.0; non-commercial only, attribution required.
+
+Search results are cached in `~/.cache/sfx-sources/multi.json`; `get` needs a key from the same search. For Internet Archive items with several audio files, `get archive:<identifier>/<filename>` selects one; without a filename it picks the best-quality audio file.
+
 ## Original files (OAuth2 API)
 
 Preview MP3s are for auditioning. When the user needs the uploader's original

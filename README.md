@@ -1,6 +1,6 @@
 # sound
 
-一个用于视频音效选材的 Claude Code Skill。从 [Freesound](https://freesound.org) 搜索和下载真实音效，结合下载量、评分人数、上传者描述、时长与许可证，帮助 Agent 为画面挑选合适的声音。
+一个用于视频音效选材的 Claude Code Skill。从 [Freesound](https://freesound.org)、Internet Archive、Mixkit、Orange Free Sounds 搜索和下载真实音效，结合下载量、评分人数、上传者描述、时长与许可证，帮助 Agent 为画面挑选合适的声音。
 
 适用于转场、卡片入场、按钮点击、纸张滑动、碰撞等视频音效需求。Skill 的工作范围是音效搜索、筛选与下载；时长和能量分析可配合 FFmpeg 完成。
 
@@ -24,6 +24,7 @@ git clone https://github.com/double2tea/sound.git .claude/skills/sound
 ├── SKILL.md                    # Agent 的技能入口与选材规则
 ├── scripts/
 │   ├── sfx.py                  # Freesound 搜索与预览下载
+│   ├── sfxlib.py               # Internet Archive / Mixkit / Orange Free Sounds
 │   └── fs_api.py               # OAuth2 授权、API 搜索、原文件下载
 └── references/
     └── api-setup.md            # 如何申请 Freesound API 凭据并授权
@@ -78,6 +79,23 @@ python3 scripts/sfx.py get sfx/ "fs:<id1>" "fs:<id2>"
 | `--sort downloads` / `rating` / `short` | 分别按下载量、评分或时长排序 |
 | `--pages 3` | 从起始页抓取的页数，默认 3 页 |
 | `-p 2` | 从第 2 页开始搜索，默认第 1 页 |
+
+## 更多音效库
+
+Freesound 没有合适结果时，用同一个脚本搜其它库：
+
+```bash
+python3 scripts/sfxlib.py search "whoosh" --source all -n 10
+python3 scripts/sfxlib.py get ./sfx mixkit:1489 archive:<identifier> orangefree:<filename>
+```
+
+| 来源 | 许可证 | 说明 |
+| --- | --- | --- |
+| `archive` | 逐条检查 | Internet Archive 音频条目，公共领域或 CC，需看条目页 |
+| `mixkit` | Mixkit Free License | 可商用、免署名，但不能把音效单独再分发 |
+| `orangefree` | CC BY-NC 4.0 | 仅非商用，需署名 |
+
+搜索结果缓存在 `~/.cache/sfx-sources/multi.json`，`get` 需要先搜索拿到 key。Internet Archive 条目有多个音频文件时，可用 `archive:<identifier>/<filename>` 指定；不指定则自动选质量最高的音频文件。
 
 ## 原文件下载（OAuth2）
 
