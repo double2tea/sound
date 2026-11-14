@@ -1,9 +1,10 @@
 ---
 name: sound
-description: Find and download sound effects from Freesound for videos, using download counts, ratings, descriptions, and licenses to select clips.
+description: Find and download sound effects from Freesound, Internet Archive, Mixkit and Orange Free Sounds for videos, using download counts, ratings, descriptions, durations and licenses to select clips.
+# Claude Code reads allowed-tools; other agents can ignore it.
 allowed-tools: Bash(python3 *), Bash(ffmpeg *)
 ---
-Use Freesound for all sound-effect searches and downloads. You can't hear these clips, so lean on what people who did hear them left behind: download counts, ratings, and the uploader's description.
+Use these libraries for sound-effect searches and downloads. This skill is agent-agnostic; install it in any skills directory (see README) and run commands from the skill directory. You can't hear these clips, so lean on what people who did hear them left behind: download counts, ratings, and the uploader's description.
 
 Run the commands from the skill directory (the folder containing this `SKILL.md`).
 

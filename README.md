@@ -1,6 +1,6 @@
 # sound
 
-一个用于视频音效选材的 Claude Code Skill。从 [Freesound](https://freesound.org)、Internet Archive、Mixkit、Orange Free Sounds 搜索和下载真实音效，结合下载量、评分人数、上传者描述、时长与许可证，帮助 Agent 为画面挑选合适的声音。
+一个用于视频音效选材的通用 Agent Skill，适用于 Claude Code、Codex、Qoder、Cursor 等能读取 `SKILL.md` 的 Agent。从 [Freesound](https://freesound.org)、Internet Archive、Mixkit、Orange Free Sounds 搜索和下载真实音效，结合下载量、评分人数、上传者描述、时长与许可证，帮助 Agent 为画面挑选合适的声音。
 
 适用于转场、卡片入场、按钮点击、纸张滑动、碰撞等视频音效需求。Skill 的工作范围是音效搜索、筛选与下载；时长和能量分析可配合 FFmpeg 完成。
 
@@ -9,12 +9,40 @@
 
 ## 安装
 
-需要 Claude Code、Python 3，以及可访问 Freesound 的网络。搜索和下载脚本仅使用 Python 标准库，无需安装 Python 第三方依赖。
+需要 Python 3，以及可访问 Freesound 的网络。搜索和下载脚本仅使用 Python 标准库，无需安装 Python 第三方依赖。
 
-在项目根目录执行：
+### 一句话安装（给 Agent）
+
+> 安装 sound skill：`git clone https://github.com/double2tea/sound.git ~/.agents/skills/sound`
+
+也可以让 Agent 直接运行安装脚本：
 
 ```bash
-git clone https://github.com/double2tea/sound.git .claude/skills/sound
+curl -fsSL https://raw.githubusercontent.com/double2tea/sound/main/install.sh | bash
+```
+
+### 各 Agent 的 skills 目录
+
+| Agent | 安装位置 |
+| --- | --- |
+| 通用（`~/.agents/skills`） | `~/.agents/skills/sound` |
+| Claude Code | `~/.claude/skills/sound` 或项目内 `.claude/skills/sound` |
+| Codex | `~/.codex/skills/sound` |
+| Qoder | `~/.qoder/skills/sound` |
+
+手动安装：
+
+```bash
+git clone https://github.com/double2tea/sound.git ~/.agents/skills/sound
+```
+
+`install.sh` 支持快捷参数：
+
+```bash
+./install.sh                 # ~/.agents/skills/sound
+./install.sh --claude        # ~/.claude/skills/sound
+./install.sh --codex         # ~/.codex/skills/sound
+./install.sh /path/to/skills/sound
 ```
 
 核心文件：
@@ -30,7 +58,7 @@ git clone https://github.com/double2tea/sound.git .claude/skills/sound
     └── api-setup.md            # 如何申请 Freesound API 凭据并授权
 ```
 
-## 在 Claude Code 中使用
+## 在 Agent 中使用
 
 安装后，在视频项目中直接描述音效需求，例如：
 
