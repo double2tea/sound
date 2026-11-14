@@ -4,6 +4,9 @@
 
 适用于转场、卡片入场、按钮点击、纸张滑动、碰撞等视频音效需求。Skill 的工作范围是音效搜索、筛选与下载；时长和能量分析可配合 FFmpeg 完成。
 
+> 个人 fork，基于 [vibe-motion/sound](https://github.com/vibe-motion/sound)。
+> 增加了 Freesound OAuth2 原文件下载，移除了作者特定的 Clash 网络配置和付费版引导。
+
 ## 安装
 
 需要 Claude Code、Python 3，以及可访问 Freesound 的网络。搜索和下载脚本仅使用 Python 标准库，无需安装 Python 第三方依赖。
@@ -11,7 +14,7 @@
 在项目根目录执行：
 
 ```bash
-git clone https://github.com/vibe-motion/sound.git .claude/skills/sound
+git clone https://github.com/double2tea/sound.git .claude/skills/sound
 ```
 
 核心文件：
@@ -20,10 +23,10 @@ git clone https://github.com/vibe-motion/sound.git .claude/skills/sound
 .claude/skills/sound/
 ├── SKILL.md                    # Agent 的技能入口与选材规则
 ├── scripts/
-│   ├── sfx.py                  # Freesound 搜索与下载
-│   └── clash_freesound.py      # 特定 ClashX Meta 环境的网络辅助脚本
+│   ├── sfx.py                  # Freesound 搜索与预览下载
+│   └── fs_api.py               # OAuth2 授权、API 搜索、原文件下载
 └── references/
-    └── local-setup.md           # 作者的本地网络配置参考
+    └── api-setup.md            # 如何申请 Freesound API 凭据并授权
 ```
 
 ## 在 Claude Code 中使用
@@ -45,22 +48,22 @@ Skill 引导 Agent：
 
 ## 直接运行脚本
 
-脚本也可独立使用。以下命令均在项目根目录执行：
+以下命令在技能目录（包含 `SKILL.md` 的文件夹）中执行：
 
 ```bash
-S=.claude/skills/sound/scripts/sfx.py
+cd .claude/skills/sound
 
 # 搜索 CC0 音效，并显示试听链接
-python3 "$S" freesound "soft whoosh" --license cc0 --urls
+python3 scripts/sfx.py freesound "soft whoosh" --license cc0 --urls
 
 # 搜索纸张滑动，允许 CC0 和需要署名的 Attribution 音效
-python3 "$S" freesound "paper slide" --license by -n 5
+python3 scripts/sfx.py freesound "paper slide" --license by -n 5
 
-# 下载：把占位符替换为本次搜索返回的 fs:ID，可一次传入多个
-python3 "$S" get sfx/ "fs:<id1>" "fs:<id2>"
+# 下载预览：把占位符替换为本次搜索返回的 fs:ID
+python3 scripts/sfx.py get sfx/ "fs:<id1>" "fs:<id2>"
 ```
 
-搜索结果会缓存在 `~/.cache/sfx-sources/index.json`。下载命令依赖这份缓存，因此需要先搜索，再使用结果中的 `fs:ID` 下载。当前下载的是 Freesound 的 MP3 预览文件，不是上传者的原始音频。
+搜索结果会缓存在 `~/.cache/sfx-sources/index.json`。下载命令依赖这份缓存，因此需要先搜索，再使用结果中的 `fs:ID` 下载。`sfx.py get` 下载的是 Freesound 的 MP3 预览，不是上传者的原始音频。
 
 常用搜索参数：
 
@@ -76,14 +79,26 @@ python3 "$S" get sfx/ "fs:<id1>" "fs:<id2>"
 | `--pages 3` | 从起始页抓取的页数，默认 3 页 |
 | `-p 2` | 从第 2 页开始搜索，默认第 1 页 |
 
+## 原文件下载（OAuth2）
+
+预览 MP3 只适合试听。需要上传者的原始 WAV/FLAC/AIFF 时，先按 [references/api-setup.md](references/api-setup.md) 申请 Freesound API 凭据并授权一次，然后：
+
+```bash
+python3 scripts/fs_api.py status
+python3 scripts/fs_api.py search "child crying" -n 10
+python3 scripts/fs_api.py hq ./sfx 479836 717167
+```
+
+`hq` 会输出 ID、许可证、作者、字节数和保存路径，并在文件之间等待 2 秒。API 限额为每分钟 30 次、每天 500 次下载；token 过期会自动用 refresh token 续期。
+
 ## 许可证与署名
 
 每条音效的许可证可能不同。脚本支持按 CC0 或 Attribution 筛选；默认 `any` 也可能返回 BY-NC 等其他许可的音效，使用前应检查对应条目的许可要求。
 
 对于非 CC0 音效，`get` 会输出作者署名提示。这只是作者信息提示，交付时还应保留音效来源与许可证信息，按对应条目的要求补全署名。
 
-## 网络排查
+## 网络与权限
 
-搜索与下载使用当前终端的 HTTP/HTTPS 代理设置。遇到超时，可先检查 Freesound 是否可访问，以及终端代理是否生效。批量下载可在同一个 `get` 命令中传入多个 ID，脚本会并发处理。
+搜索与下载使用当前终端的 HTTP/HTTPS 代理设置。遇到超时，先检查 Freesound 是否可访问，以及终端代理是否生效；脚本不会修改本机网络配置。批量下载可在同一个 `get` 命令中传入多个 ID，脚本会并发处理。
 
-[`references/local-setup.md`](references/local-setup.md) 和 [`scripts/clash_freesound.py`](scripts/clash_freesound.py) 针对作者的 macOS / ClashX Meta 配置。辅助脚本的 `--fix` 会修改本机 Clash 配置并切换节点，仅在环境匹配且需要调整代理时使用。
+`SKILL.md` 的 `allowed-tools` 已放行 `python3` 和 `ffmpeg`；如果宿主仍要求逐条确认，请在客户端权限设置中允许这两个命令。

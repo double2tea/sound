@@ -25,8 +25,10 @@ Keep this file private (`chmod 600`) and never commit it.
 
 ## 2. Authorize once
 
+Run the commands from the skill directory (the folder containing `SKILL.md`).
+
 ```bash
-python3 .claude/skills/sound/scripts/fs_api.py auth --no-browser
+python3 scripts/fs_api.py auth --no-browser
 ```
 
 Open the printed URL in a browser where you are logged in, then click
@@ -36,9 +38,9 @@ writes `~/.config/freesound/token.json` (24 h lifetime, refresh token included).
 ## 3. Search and download originals
 
 ```bash
-python3 .claude/skills/sound/scripts/fs_api.py status
-python3 .claude/skills/sound/scripts/fs_api.py search "child crying" -n 10
-python3 .claude/skills/sound/scripts/fs_api.py hq ./sfx 479836 717167
+python3 scripts/fs_api.py status
+python3 scripts/fs_api.py search "child crying" -n 10
+python3 scripts/fs_api.py hq ./sfx 479836 717167
 ```
 
 `hq` prints id, license, author, bytes and path, and sleeps 2 s between files.

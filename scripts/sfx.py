@@ -76,6 +76,8 @@ def freesound(a):
                      "stats": f"↓{dl} ★{rt[1]}({rn[1]})" if rt and rn else f"↓{dl} ★-",
                      # the uploader's own words (mic, source, processing) are the closest thing to hearing it
                      "desc": html.unescape(re.sub(r"<[^>]+>|\s+", " ", desc[1])).strip()[:90] if desc else ""})
+    if a.max_duration is not None:
+        rows = [r for r in rows if float(r["dur"][:-1]) <= a.max_duration]
     if a.sort == "relevance":
         rows.sort(key=lambda r: -r["downloads"])
     show(rows[: a.n], a, lic=a.license != "cc0")
@@ -120,13 +122,14 @@ def main():
     f = sp.add_parser("freesound"); f.add_argument("query"); f.add_argument("--license", choices=FS_LICENSE, default="any")
     f.add_argument("--sort", choices=FS_SORT, default="relevance"); f.add_argument("-n", type=int, default=8); f.add_argument("--urls", action="store_true")
     f.add_argument("-p", "--page", type=int, default=1)
-    f.add_argument("--pages", type=int, default=3, help="relevance pages (15 each) to rank by downloads"); f.set_defaults(fn=freesound)
+    f.add_argument("--pages", type=int, default=3, help="relevance pages (15 each) to rank by downloads")
+    f.add_argument("--max-duration", type=float, help="drop clips longer than this many seconds"); f.set_defaults(fn=freesound)
     g = sp.add_parser("get"); g.add_argument("out_dir"); g.add_argument("keys", nargs="+"); g.set_defaults(fn=get)
     a = ap.parse_args()
     try:
         a.fn(a)
     except OSError as e:
-        sys.exit(f"network error: {getattr(e, 'reason', e)}" + (" — try clash_freesound.py --fix" if a.cmd == "freesound" else ""))
+        sys.exit(f"network error: {getattr(e, 'reason', e)} — check the terminal's http(s)_proxy settings")
 
 
 if __name__ == "__main__":
