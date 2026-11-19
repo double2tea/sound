@@ -85,6 +85,8 @@ def search_mixkit(q, n):
         h = fetch(url).decode("utf-8", "replace")
     out = []
     for item in mixkit_parse.parse_category_page(h, page_slug=slug):
+        if not item["preview_url"]:
+            continue
         out.append({"key": "mixkit:" + item["id"], "provider": "mixkit", "id": item["id"],
                     "title": item["title"] or item["id"],
                     "duration": item["duration"] or "-",

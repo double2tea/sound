@@ -38,16 +38,20 @@ def download_url(mixkit_id: str) -> str:
 
 
 def parse_category_page(page_html: str, *, page_slug: str = "") -> list[dict]:
-    """Return [{id, title, preview_url, download_url, duration, tags}]."""
+    """Return [{id, title, preview_url, download_url, duration, tags}].
+
+    `preview_url` may be empty when the card exposes none; callers that need a
+    playable preview must filter those rows themselves.
+    """
     items: list[dict] = []
     for block in _BLOCK_SPLIT.split(page_html)[1:]:
         id_match = _ID.search(block)
-        preview_match = _PREVIEW.search(block)
-        if not id_match or not preview_match:
+        if not id_match:
             continue
         title_match = _TITLE_SPECIFIC.search(block) or _TITLE_GENERIC.search(block)
         if not title_match:
             continue
+        preview_match = _PREVIEW.search(block)
         mixkit_id = id_match.group(1)
         duration_match = _DURATION.search(_text(block))
         tags = sorted({page_slug, *_TAG_HREF.findall(block)} - {""})
@@ -55,7 +59,7 @@ def parse_category_page(page_html: str, *, page_slug: str = "") -> list[dict]:
             {
                 "id": mixkit_id,
                 "title": _text(title_match.group(1)),
-                "preview_url": html.unescape(preview_match.group(1)),
+                "preview_url": html.unescape(preview_match.group(1)) if preview_match else "",
                 "download_url": download_url(mixkit_id),
                 "duration": duration_match.group(1) if duration_match else "",
                 "tags": tags,
