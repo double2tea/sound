@@ -6,6 +6,22 @@ allowed-tools: Bash(python3 *), Bash(ffmpeg *)
 ---
 Use these libraries for sound-effect searches and downloads. This skill is agent-agnostic; install it in any skills directory (see README) and run commands from the skill directory. You can't hear these clips, so lean on what people who did hear them left behind: download counts, ratings, and the uploader's description.
 
+## When to use this vs script-to-sfx-automator
+
+This skill is the fast lane: one query in, a handful of candidates out. Use it when
+the user names a sound ("find a whoosh") or wants to audition quickly.
+
+When the user hands over a script, storyboard, or cue sheet and wants a complete
+package, use `script-to-sfx-automator` instead. It covers the same search-and-download
+ground plus three things this skill deliberately leaves out:
+
+- shot-by-shot cue sheets generated from the script;
+- license governance (usable / editorial_temp / rejected tiers, hard rejection of
+  NC and watermarked sources, mandatory CC BY attribution files);
+- manifest normalization and UCS CatID export.
+
+The trade-off is that it runs a full pipeline. For a quick lookup, stay here.
+
 Run the commands from the skill directory (the folder containing this `SKILL.md`).
 
 ```
