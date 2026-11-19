@@ -14,6 +14,9 @@ Keys printed by `search` are cached in ~/.cache/sfx-sources/multi.json.
 import argparse, html, json, os, re, sys, time, urllib.parse, urllib.request
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import mixkit_parse
+
 UA = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) sfx-libraries"}
 CACHE = Path.home() / ".cache" / "sfx-sources"
 INDEX = CACHE / "multi.json"
@@ -81,17 +84,11 @@ def search_mixkit(q, n):
         url = "https://mixkit.co/free-sound-effects/?" + urllib.parse.urlencode({"q": q})
         h = fetch(url).decode("utf-8", "replace")
     out = []
-    for block in re.split(r'<div class="item-grid__item">', h)[1:]:
-        m = re.search(r'data-audio-player-item-id-value="(\d+)"', block)
-        p = re.search(r'data-audio-player-preview-url-value="([^"]+)"', block)
-        if not m or not p:
-            continue
-        t = re.search(r"<h[23][^>]*>(.*?)</h[23]>", block, re.S)
-        d = re.search(r"(\d+:\d+)", clean(block))
-        out.append({"key": "mixkit:" + m.group(1), "provider": "mixkit", "id": m.group(1),
-                    "title": clean(t.group(1)) if t else m.group(1),
-                    "duration": d.group(1) if d else "-",
-                    "license": LICENSE["mixkit"], "url": p.group(1)})
+    for item in mixkit_parse.parse_category_page(h, page_slug=slug):
+        out.append({"key": "mixkit:" + item["id"], "provider": "mixkit", "id": item["id"],
+                    "title": item["title"] or item["id"],
+                    "duration": item["duration"] or "-",
+                    "license": LICENSE["mixkit"], "url": item["preview_url"]})
         if len(out) >= n:
             break
     return out
